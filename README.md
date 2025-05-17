@@ -1,5 +1,5 @@
 # VeracIA: Verificador de Fake News com Google Gemini
-![Logo do VeracIA](veracIA.png)
+<img src="https://github.com/pedrojmlmelo/VeracIA/blob/main/veracIA.png" alt="Image" height="200" width="200">
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pedrojmlmelo/VeracIA/blob/main/Verificador_de_Fake_News.ipynb)
 
