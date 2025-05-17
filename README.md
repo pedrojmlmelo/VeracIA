@@ -13,7 +13,7 @@
 
 Este projeto, desenvolvido como parte da Imersão Inteligência Artificial da Alura e do Google, utiliza o poder do modelo de linguagem Google Gemini para auxiliar na verificação de notícias e identificar potenciais fake news através de uma arquitetura multi-agente.
 
-## Visão Geral
+## 🔎 Visão Geral
 
 O VeracIA implementa um sistema com quatro agentes de IA distintos que trabalham em conjunto para analisar a credibilidade de uma notícia fornecida através de sua URL:
 
@@ -22,7 +22,7 @@ O VeracIA implementa um sistema com quatro agentes de IA distintos que trabalham
 3.  **Agente de Checagem Cruzada:** Tenta verificar a veracidade das alegações da notícia.
 4.  **Agente Sintetizador:** Consolida as análises dos outros agentes para fornecer um parecer final sobre a probabilidade de ser fake news.
 
-## Como Funciona
+## ⚙️ Como Funciona
 
 O script em Python utiliza as bibliotecas `google-genai` para interagir com o modelo Gemini e `google-adk` para a criação e gerenciamento dos agentes. O fluxo de operação é o seguinte:
 
