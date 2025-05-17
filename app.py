@@ -18,26 +18,69 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-# --- CONFIGURAÇÃO DA API KEY E CLIENTE GEMINI ---
-# A API Key será pega dos segredos do Streamlit Cloud
-try:
-    os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"]) # Para google-generativeai
-except KeyError:
-    st.error("Chave GOOGLE_API_KEY não encontrada nos segredos. Configure-a no Streamlit Cloud.")
-    st.stop()
-except AttributeError: # Se st.secrets não estiver disponível localmente (só no Cloud)
-    try:
-        # Tenta carregar de variável de ambiente local para teste (opcional)
-        os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY_LOCAL")
-        if not os.environ["GOOGLE_API_KEY"]:
-            st.error("Configure a GOOGLE_API_KEY nos segredos do Streamlit ou como variável de ambiente GOOGLE_API_KEY_LOCAL para teste local.")
-            st.stop()
-        genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-    except Exception as e:
-        st.error(f"Erro ao configurar a API Key: {e}")
-        st.stop()
+# No início do seu app.py, depois das importações
 
+import streamlit as st
+import os
+from google import genai # ou import google.generativeai as genai
+# ... outras importações
+
+# --- CONFIGURAÇÃO DA API KEY E CLIENTE GEMINI ---
+API_KEY = None
+GOOGLE_CSE_ID = None
+GOOGLE_SEARCH_API_KEY = None # Opcional, se a chave de busca for diferente
+
+try:
+    # No Streamlit Cloud, st.secrets é populado pela UI.
+    # Localmente (como no Codespaces), st.secrets lê de .streamlit/secrets.toml.
+    API_KEY = st.secrets["GOOGLE_API_KEY"]
+    # Opcional: carregar chaves para a ferramenta de busca se existirem
+    if "GOOGLE_CSE_ID" in st.secrets:
+        GOOGLE_CSE_ID = st.secrets["GOOGLE_CSE_ID"]
+        os.environ["GOOGLE_CSE_ID"] = GOOGLE_CSE_ID # Para o ADK
+    if "GOOGLE_SEARCH_API_KEY" in st.secrets:
+        GOOGLE_SEARCH_API_KEY = st.secrets["GOOGLE_SEARCH_API_KEY"]
+        # Se a google_search do ADK usa a GOOGLE_API_KEY para autenticação de busca
+        # e você tem uma chave específica para busca, você pode precisar definir
+        # a variável de ambiente que a ferramenta de busca espera.
+        # Por padrão, a ferramenta google_search do ADK pode procurar por GOOGLE_API_KEY e GOOGLE_CSE_ID
+    elif API_KEY: # Se não houver GOOGLE_SEARCH_API_KEY específica, mas houver a principal
+        GOOGLE_SEARCH_API_KEY = API_KEY # Assume que a chave principal também serve para busca
+
+except (KeyError, streamlit.errors.StreamlitAPIException, streamlit.errors.StreamlitSecretNotFoundError) as e:
+    # Este bloco é executado se st.secrets não encontrar o arquivo ou a chave específica.
+    st.sidebar.warning(f"Não foi possível carregar configurações de st.secrets (erro: {type(e).__name__}). Verifique se '.streamlit/secrets.toml' existe e está configurado para desenvolvimento local.")
+    # Tenta como fallback variáveis de ambiente (útil se não quiser usar secrets.toml localmente ou para outros sistemas de deploy)
+    API_KEY = os.getenv("GOOGLE_API_KEY")
+    GOOGLE_CSE_ID = os.getenv("GOOGLE_CSE_ID")
+    GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", API_KEY) # Usa API_KEY como fallback para search key
+
+if not API_KEY:
+    st.error("ERRO CRÍTICO: Chave GOOGLE_API_KEY não configurada.")
+    st.info("Para rodar este aplicativo, você precisa configurar sua GOOGLE_API_KEY:")
+    st.info("1. Se estiver implantando no Streamlit Cloud: adicione-a em 'Settings' -> 'Secrets'.")
+    st.info("2. Se estiver rodando localmente (como neste Codespace/VSCode):")
+    st.info("   a. Crie um arquivo chamado 'secrets.toml' na pasta '.streamlit' (ex: 'VeracIA/.streamlit/secrets.toml').")
+    st.info("   b. Adicione sua chave ao arquivo no formato: GOOGLE_API_KEY = 'sua_chave_aqui'")
+    st.info("   (Opcional) Adicione também GOOGLE_CSE_ID e GOOGLE_SEARCH_API_KEY se a ferramenta de busca exigir.")
+    st.info("   OU")
+    st.info("   c. Defina a variável de ambiente GOOGLE_API_KEY (e outras, se necessário).")
+    st.stop() # Para a execução se a chave principal não for encontrada
+
+# Configura a API Key para google-generativeai
+try:
+    genai.configure(api_key=API_KEY)
+    os.environ["GOOGLE_API_KEY"] = API_KEY # Garante que a variável de ambiente seja definida para bibliotecas que a usam
+
+    # Se GOOGLE_SEARCH_API_KEY for diferente da API_KEY principal e for necessária,
+    # certifique-se de que a ferramenta `google_search` a utilize corretamente.
+    # O ADK pode usar GOOGLE_API_KEY para a busca se GOOGLE_SEARCH_API_KEY não estiver explicitamente configurada para ele.
+    # Se a chave de busca é a mesma do Gemini, definir os.environ["GOOGLE_API_KEY"] já pode ser suficiente.
+
+    st.sidebar.success("API Key do Google configurada.")
+except Exception as e:
+    st.error(f"Falha ao configurar a biblioteca Google GenAI com a API Key: {e}")
+    st.stop()
 
 # Se estiver usando o cliente antigo 'from google import genai' e 'genai.Client()'
 # client = genai.Client() # Esta linha pode não ser necessária se você usa o ADK ou o novo google-generativeai
