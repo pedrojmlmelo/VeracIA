@@ -1,0 +1,25 @@
+google-generativeai
+google-search-results
+google-cloud-aiplatform
+# A biblioteca google-adk pode não estar diretamente no PyPI com esse nome ou pode ser parte de outra.
+# Se você usou %pip install google-genai e !pip install -q google-adk
+# Precisamos verificar a forma correta de listar google-adk ou suas dependências.
+# Por agora, vamos focar nas principais. A google-genai já inclui o genai.
+# Para o google_search dentro do ADK, pode ser que precise de 'google-api-python-client' ou 'google-search-results'
+# Vamos assumir que 'google-generativeai' (que substitui 'google-genai') e ferramentas de busca são o essencial.
+# O ADK pode ser mais complexo de empacotar.
+
+# Tentativa para requirements.txt (pode precisar de ajuste):
+google-generativeai
+streamlit
+requests
+# Se o google-adk for essencial e não for coberto por google-generativeai,
+# a implantação pode ser mais complexa. O ADK é mais para desenvolvimento de agentes
+# e pode não ser trivial de "empacotar" para Streamlit Cloud sem entender suas dependências diretas.
+# Vamos focar em usar o Gemini diretamente se o ADK apresentar problemas de empacotamento.
+
+# Simplificando e focando no Gemini API e busca (se ADK for problemático):
+# Se o ADK for crucial, precisaremos investigar como instalá-lo em ambientes como Streamlit Cloud.
+# Por enquanto, o Colab instala com !pip. Vamos tentar incluir google-adk. Se falhar no deploy,
+# pode ser necessário repensar a estrutura sem ADK ou encontrar uma forma de instalá-lo.
+google-adk
